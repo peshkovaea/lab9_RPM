@@ -24,8 +24,6 @@ namespace lab9_RPM
         public MainWindow()
         {
             InitializeComponent();
-            // Установка контекста данных - связывание View с ViewModel
-            DataContext = new MainViewModel();
         }
     }
 }
