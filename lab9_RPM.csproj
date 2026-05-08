@@ -76,6 +76,7 @@
     <Compile Include="RelayCommand.cs" />
     <Compile Include="Services\DialogService.cs" />
     <Compile Include="Services\IDialogService.cs" />
+<<<<<<< HEAD
     <Compile Include="Services\INavigationAware.cs" />
     <Compile Include="Services\INavigationService.cs" />
     <Compile Include="Services\NavigationService.cs" />
@@ -86,6 +87,9 @@
       <DependentUpon>AboutView.xaml</DependentUpon>
     </Compile>
     <Page Include="View\ContactsListView.xaml">
+=======
+    <Page Include="MainWindow.xaml">
+>>>>>>> 8a8291d945e0798208372b79d31c2ff6a1456005
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

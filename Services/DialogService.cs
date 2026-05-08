@@ -4,7 +4,10 @@ namespace lab9_RPM.Services
 {
     /// <summary>
     /// Реализация сервиса диалогов для WPF
+<<<<<<< HEAD
     /// Использует стандартный MessageBox
+=======
+>>>>>>> 8a8291d945e0798208372b79d31c2ff6a1456005
     /// </summary>
     public class DialogService : IDialogService
     {
