@@ -3,22 +3,20 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
 using lab9_RPM.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace lab9_RPM
 {
-    /// <summary>
-    /// Главная ViewModel приложения "Телефонная книга"
-    /// Внедрение зависимостей через конструктор (Constructor Injection)
-    /// </summary>
     public class MainViewModel : ObservableObject
     {
         private readonly IDialogService _dialogService;
+        private readonly PeshkovaEA_RPM_lab12Context _context;
 
-        public ObservableCollection<Contact> Contacts { get; }
+        public ObservableCollection<Contacts> Contacts { get; set; }
 
         private string _name = string.Empty;
         private string _phone = string.Empty;
-        private Contact _selectedContact;
+        private Contacts _selectedContact;
 
         public string Name
         {
@@ -32,7 +30,7 @@ namespace lab9_RPM
             set => Set(ref _phone, value);
         }
 
-        public Contact SelectedContact
+        public Contacts SelectedContact
         {
             get => _selectedContact;
             set => Set(ref _selectedContact, value);
@@ -41,60 +39,45 @@ namespace lab9_RPM
         public ICommand AddCommand { get; }
         public ICommand DeleteCommand { get; }
 
-        /// <summary>
-        /// Constructor Injection - DI-контейнер автоматически передаст реализацию IDialogService
-        /// </summary>
-        /// <param name="dialogService">Сервис диалоговых окон</param>
-        public MainViewModel(IDialogService dialogService)
+        public MainViewModel(IDialogService dialogService, PeshkovaEA_RPM_lab12Context context)
         {
-            _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));//проверка на нуль гарантирует что _dialogServicе никогдда не будет null
+            _dialogService = dialogService;
+            _context = context;
 
-            Contacts = new ObservableCollection<Contact>();
+            LoadContacts();
 
-            // Инициализация команд
             AddCommand = new RelayCommand(AddContact, () => CanAddContact());
-            DeleteCommand = new RelayCommand<Contact>(DeleteContact, (contact) => CanDeleteContact(contact));
-
-            // Добавление тестовых данных
-            LoadSampleData();
+            DeleteCommand = new RelayCommand<Contacts>(DeleteContact, (contact) => CanDeleteContact(contact));
         }
 
-        private void LoadSampleData()
+        private void LoadContacts()
         {
-            Contacts.Add(new Contact("Иван Петров", "+79161234567"));
-            Contacts.Add(new Contact("Мария Сидорова", "89261234567"));
-            Contacts.Add(new Contact("Алексей Иванов", "9123456789"));
+            Contacts = new ObservableCollection<Contacts>(_context.Contacts.ToList());
         }
 
-        /// <summary>
-        /// Добавление нового контакта
-        /// </summary>
         private void AddContact()
         {
             try
             {
-                // Проверка на дубликат по номеру телефона
                 if (Contacts.Any(c => c.Phone == Phone.Trim()))
                 {
                     _dialogService.ShowWarning("Контакт с таким номером телефона уже существует!");
                     return;
                 }
 
-                // Создание нового контакта
-                var newContact = new Contact(Name.Trim(), Phone.Trim());
+                var newContact = new Contacts { Name = Name.Trim(), Phone = Phone.Trim() };
+                _context.Contacts.Add(newContact);
+                _context.SaveChanges();
                 Contacts.Add(newContact);
 
-                // Информационное сообщение об успешном добавлении
                 _dialogService.ShowInfo($"Контакт \"{Name.Trim()}\" успешно добавлен!");
 
-                // Очистка полей ввода
                 Name = string.Empty;
                 Phone = string.Empty;
             }
-            catch (ArgumentException ex)
+            catch (Exception ex)
             {
-                // Обработка ошибок валидации
-                _dialogService.ShowWarning(ex.Message, "Ошибка добавления контакта");
+                _dialogService.ShowWarning($"Ошибка: {ex.Message}");
             }
         }
 
@@ -103,32 +86,26 @@ namespace lab9_RPM
             return !string.IsNullOrWhiteSpace(Name) && !string.IsNullOrWhiteSpace(Phone);
         }
 
-        /// <summary>
-        /// Удаление выбранного контакта с подтверждением
-        /// </summary>
-        private void DeleteContact(Contact contact)
+        private void DeleteContact(Contacts contact)
         {
-            if (contact == null || !Contacts.Contains(contact))
-                return;
+            if (contact == null) return;
 
-            // Запрос подтверждения удаления
-            if (_dialogService.ShowConfirmation($"Вы действительно хотите удалить контакт \"{contact.Name}\"?", "Подтверждение удаления"))
+            if (_dialogService.ShowConfirmation($"Удалить контакт \"{contact.Name}\"?", "Подтверждение"))
             {
+                _context.Contacts.Remove(contact);
+                _context.SaveChanges();
                 Contacts.Remove(contact);
 
-                // Очистка выбранного контакта после удаления
                 if (SelectedContact == contact)
-                {
                     SelectedContact = null;
-                }
 
                 _dialogService.ShowInfo($"Контакт \"{contact.Name}\" удалён.");
             }
         }
 
-        private bool CanDeleteContact(Contact contact)
+        private bool CanDeleteContact(Contacts contact)
         {
-            return contact != null && Contacts.Contains(contact);
+            return contact != null;
         }
     }
 }

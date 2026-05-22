@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:lab9_RPM"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="Управление контактами" Height="450" Width="800">
     <Grid Margin="15">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -14,6 +14,9 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
+
+        <!-- УДАЛИТЕ ЭТУ СТРОКУ -->
+        <!-- <ContentControl Content="{Binding CurrentView}" /> -->
 
         <!-- Заголовок -->
         <TextBlock Grid.Row="0" 
@@ -109,7 +112,6 @@
                 </DataGrid.Resources>
 
                 <DataGrid.Columns>
-                    <!-- Колонка с порядковым номером -->
                     <DataGridTextColumn Header="#" 
                                         Width="50"
                                         IsReadOnly="True">
@@ -121,13 +123,11 @@
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
 
-                    <!-- Колонка "Имя" -->
                     <DataGridTextColumn Header="Имя контакта" 
                                         Binding="{Binding Name}"
                                         Width="*"
                                         FontWeight="SemiBold"/>
 
-                    <!-- Колонка "Телефон" -->
                     <DataGridTextColumn Header="Номер телефона" 
                                         Binding="{Binding Phone}"
                                         Width="*"/>
