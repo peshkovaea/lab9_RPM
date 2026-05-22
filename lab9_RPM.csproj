@@ -186,6 +186,7 @@
     <Compile Include="Services\IDialogService.cs" />
     <Compile Include="ViewModel\AboutViewModel.cs" />
     <Page Include="MainWindow.xaml">
+>>>>>>> 8a8291d945e0798208372b79d31c2ff6a1456005
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -194,10 +195,18 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Contacts.cs" />
-    <Compile Include="MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
+    <Compile Include="View\ContactsListView.xaml.cs">
+      <DependentUpon>ContactsListView.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="MainWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\AboutView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ObservableObject.cs" />

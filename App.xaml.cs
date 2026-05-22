@@ -32,12 +32,18 @@ namespace lab9_RPM
 
             var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
             mainWindow.Show();
+>>>>>>> 8a8291d945e0798208372b79d31c2ff6a1456005
         }
 
         protected override void OnExit(ExitEventArgs e)
         {
+<<<<<<< HEAD
+            _serviceProvider?.Dispose();
+            base.OnExit(e);
+=======
             base.OnExit(e);
             _serviceProvider?.Dispose();
+>>>>>>> 8a8291d945e0798208372b79d31c2ff6a1456005
         }
     }
 }
