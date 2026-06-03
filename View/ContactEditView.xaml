@@ -1,0 +1,45 @@
+<!-- Views/ContactEditView.xaml -->
+<UserControl x:Class="lab9_RPM.Views.ContactEditView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <TextBlock Grid.Row="0" 
+                   Text="{Binding IsEditMode, Converter={StaticResource BoolToEditText}}"
+                   FontSize="24" 
+                   FontWeight="Bold"
+                   HorizontalAlignment="Center"
+                   Margin="0,0,0,30"/>
+        
+        <StackPanel Grid.Row="1" Margin="0,10">
+            <TextBlock Text="Имя:" FontWeight="Bold" Margin="0,0,0,5"/>
+            <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" 
+                     Padding="8" FontSize="14"/>
+        </StackPanel>
+        
+        <StackPanel Grid.Row="2" Margin="0,15">
+            <TextBlock Text="Телефон:" FontWeight="Bold" Margin="0,0,0,5"/>
+            <TextBox Text="{Binding Phone, UpdateSourceTrigger=PropertyChanged}" 
+                     Padding="8" FontSize="14"/>
+            <TextBlock Text="Формат: +7XXXXXXXXXX, 8XXXXXXXXXX или XXXXXXXXXX"
+                       FontSize="10" Foreground="Gray" Margin="5,5,0,0"/>
+        </StackPanel>
+        
+        <StackPanel Grid.Row="3" Orientation="Horizontal" 
+                    HorizontalAlignment="Center" Margin="0,30">
+            <Button Content="Сохранить" Command="{Binding SaveCommand}"
+                    Width="100" Height="35" Margin="0,0,10,0"
+                    Background="#27AE60" Foreground="White"/>
+            <Button Content="Отмена" Command="{Binding CancelCommand}"
+                    Width="100" Height="35"
+                    Background="#E74C3C" Foreground="White"/>
+        </StackPanel>
+    </Grid>
+</UserControl>

@@ -15,35 +15,29 @@ namespace lab9_RPM
 
             var services = new ServiceCollection();
 
+            // Регистрация DbContext
             services.AddDbContext<PeshkovaEA_RPM_lab12Context>(options =>
-                options.UseSqlServer("Data Source=DBSRV\\ag2025;Initial Catalog=PeshkovaEA_RPM_lab12;Integrated Security=True;TrustServerCertificate=True"));
+                options.UseSqlServer("Data Source=DBSRV\\ag2025;Initial Catalog=PeshkovaEA_RPM_lab12;Integrated Security=True;TrustServerCertificate=True"),
+                ServiceLifetime.Scoped);
 
+            // Регистрация сервисов
             services.AddSingleton<IDialogService, DialogService>();
-            services.AddTransient<MainViewModel>();  
+            services.AddSingleton<INavigationService, NavigationService>();
 
-            services.AddSingleton<MainWindow>(provider =>
-            {
-                var window = new MainWindow();
-                window.DataContext = provider.GetRequiredService<MainViewModel>();
-                return window;
-            });
+            // Регистрация ViewModels
+            services.AddTransient<ContactsListViewModel>();
+            services.AddTransient<ContactEditViewModel>();
+            services.AddTransient<AboutViewModel>();
+            services.AddTransient<MainWindowViewModel>();
+
+            // Регистрация MainWindow
+            services.AddSingleton<MainWindow>();
 
             _serviceProvider = services.BuildServiceProvider();
 
             var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
+            mainWindow.DataContext = _serviceProvider.GetRequiredService<MainWindowViewModel>();
             mainWindow.Show();
->>>>>>> 8a8291d945e0798208372b79d31c2ff6a1456005
-        }
-
-        protected override void OnExit(ExitEventArgs e)
-        {
-<<<<<<< HEAD
-            _serviceProvider?.Dispose();
-            base.OnExit(e);
-=======
-            base.OnExit(e);
-            _serviceProvider?.Dispose();
->>>>>>> 8a8291d945e0798208372b79d31c2ff6a1456005
         }
     }
 }

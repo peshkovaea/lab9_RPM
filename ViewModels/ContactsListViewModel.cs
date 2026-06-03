@@ -1,107 +1,136 @@
-﻿using System;
+﻿
+using lab9_RPM.Services;
+using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
-using lab9_RPM.Services;
 
 namespace lab9_RPM.ViewModels
 {
-    public class ContactsListViewModel : ObservableObject
+    public class ContactsListViewModel : ObservableObject, INavigationAware
     {
+        private readonly PeshkovaEA_RPM_lab12Context _context;
         private readonly IDialogService _dialogService;
         private readonly INavigationService _navigationService;
 
-        public ObservableCollection<Contact> Contacts { get; }
+        public ObservableCollection<Contacts> Contacts { get; set; }
 
-        private string _name = string.Empty;
-        private string _phone = string.Empty;
-        private Contact _selectedContact;
+        private Contacts _selectedContact;
+        private string _searchText;
 
-        public string Name
-        {
-            get => _name;
-            set => Set(ref _name, value);
-        }
-
-        public string Phone
-        {
-            get => _phone;
-            set => Set(ref _phone, value);
-        }
-
-        public Contact SelectedContact
+        public Contacts SelectedContact
         {
             get => _selectedContact;
-            set => Set(ref _selectedContact, value);
+            set
+            {
+                Set(ref _selectedContact, value);
+                // Обновляем команды при изменении выделения
+                (DeleteCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                (EditCommand as RelayCommand)?.RaiseCanExecuteChanged();
+            }
+        }
+
+        public string SearchText
+        {
+            get => _searchText;
+            set
+            {
+                if (Set(ref _searchText, value))
+                {
+                    LoadContacts(); // Фильтрация при изменении текста поиска
+                }
+            }
         }
 
         public ICommand AddCommand { get; }
+        public ICommand EditCommand { get; }
         public ICommand DeleteCommand { get; }
 
-        public ContactsListViewModel(IDialogService dialogService, INavigationService navigationService)
+        public ContactsListViewModel(
+            PeshkovaEA_RPM_lab12Context context,
+            IDialogService dialogService,
+            INavigationService navigationService)
         {
+            _context = context;
             _dialogService = dialogService;
             _navigationService = navigationService;
 
-            Contacts = new ObservableCollection<Contact>();
-            AddCommand = new RelayCommand(AddContact, () => CanAddContact());
-            DeleteCommand = new RelayCommand<Contact>(DeleteContact, contact => CanDeleteContact(contact));
+            Contacts = new ObservableCollection<Contacts>();
 
-            // Добавляем тестовые данные
-            LoadSampleData();
+            AddCommand = new RelayCommand(AddContact);
+            EditCommand = new RelayCommand(EditContact, () => SelectedContact != null);
+            DeleteCommand = new RelayCommand(DeleteContact, () => SelectedContact != null);
+
+            LoadContacts();
         }
 
-        private void LoadSampleData()
+        public void OnNavigatedTo(object parameter)
         {
-            Contacts.Add(new Contact("Иван Петров", "+79161234567"));
-            Contacts.Add(new Contact("Мария Сидорова", "89261234567"));
-            Contacts.Add(new Contact("Алексей Иванов", "9123456789"));
+            // Обновляем список при возврате к этому ViewModel
+            LoadContacts();
+        }
+
+        private void LoadContacts()
+        {
+            try
+            {
+                var query = _context.Contacts.AsQueryable();
+
+                // Реализация фильтрации (поиска)
+                if (!string.IsNullOrWhiteSpace(SearchText))
+                {
+                    query = query.Where(c => c.Name.Contains(SearchText) ||
+                                             c.Phone.Contains(SearchText));
+                }
+
+                var contactsList = query.OrderBy(c => c.Name).ToList();
+
+                Contacts.Clear();
+                foreach (var contact in contactsList)
+                {
+                    Contacts.Add(contact);
+                }
+            }
+            catch (Exception ex)
+            {
+                _dialogService.ShowError($"Ошибка загрузки контактов: {ex.Message}");
+            }
         }
 
         private void AddContact()
         {
-            try
+            _navigationService.NavigateTo<ContactEditViewModel>(null);
+        }
+
+        private void EditContact()
+        {
+            if (SelectedContact != null)
             {
-                // Проверка на дубликат
-                if (Contacts.Any(c => c.Phone == Phone.Trim()))
+                _navigationService.NavigateTo<ContactEditViewModel>(SelectedContact);
+            }
+        }
+
+        private void DeleteContact()
+        {
+            if (SelectedContact == null) return;
+
+            if (_dialogService.ShowConfirmation($"Удалить контакт \"{SelectedContact.Name}\"?", "Подтверждение"))
+            {
+                try
                 {
-                    _dialogService.ShowWarning("Контакт с таким номером телефона уже существует!");
-                    return;
+                    // Реализация операции удаления (Delete)
+                    _context.Contacts.Remove(SelectedContact);
+                    _context.SaveChanges();
+                    Contacts.Remove(SelectedContact);
+
+                    _dialogService.ShowInfo("Контакт успешно удалён");
                 }
-
-                var newContact = new Contact(Name.Trim(), Phone.Trim());
-                Contacts.Add(newContact);
-                _dialogService.ShowInfo($"Контакт \"{Name.Trim()}\" успешно добавлен!");
-
-                Name = string.Empty;
-                Phone = string.Empty;
+                catch (Exception ex)
+                {
+                    _dialogService.ShowError($"Ошибка при удалении: {ex.Message}");
+                }
             }
-            catch (ArgumentException ex)
-            {
-                _dialogService.ShowWarning(ex.Message, "Ошибка добавления контакта");
-            }
-        }
-
-        private bool CanAddContact()
-        {
-            return !string.IsNullOrWhiteSpace(Name) && !string.IsNullOrWhiteSpace(Phone);
-        }
-
-        private void DeleteContact(Contact contact)
-        {
-            if (contact == null || !Contacts.Contains(contact))
-                return;
-
-            if (_dialogService.ShowConfirmation($"Удалить контакт \"{contact.Name}\"?", "Подтверждение"))
-            {
-                Contacts.Remove(contact);
-                if (SelectedContact == contact) SelectedContact = null;
-            }
-        }
-
-        private bool CanDeleteContact(Contact contact)
-        {
-            return contact != null && Contacts.Contains(contact);
         }
     }
 }
